@@ -1,5 +1,7 @@
 import { VertexAI } from "@google-cloud/vertexai";
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
 export async function POST(req: any) {
   try {
@@ -7,6 +9,20 @@ export async function POST(req: any) {
     const { prompt } = body;
 
     console.log(prompt);
+
+    // Retrieve the JSON string from the environment variable
+    const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+
+    if (!credentialsJson) {
+      throw new Error("Service account credentials are not set");
+    }
+
+    // Write the service account JSON to a temporary file
+    const tempFilePath = path.join("/tmp", "service-account.json");
+    fs.writeFileSync(tempFilePath, credentialsJson);
+
+    // Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the temporary file path
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = tempFilePath;
 
     const vertexAI = new VertexAI({
       project: process.env.VERTEX_AI_PROJECT_ID,
