@@ -77,7 +77,7 @@ const AnyQuiz = () => {
 
           <CustomDropdown
             title="Select no. of questions"
-            data={[5, 10, 15, 20]}
+            data={[5, 10, 15]}
             onSelect={(value) => setNumQuestions(Number(value))}
           />
           <Button

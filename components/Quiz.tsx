@@ -22,7 +22,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(25);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   const router = useRouter();
@@ -43,7 +43,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
   useEffect(() => {
     if (questions.length > 0 && !isTimerRunning) {
       setIsTimerRunning(true);
-      setTimeLeft(15);
+      setTimeLeft(25);
     }
   }, [questions, currentQuestion]);
 
@@ -64,7 +64,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
       setCurrentQuestion(nextQuestion);
       setUserAnswers(updatedUserAnswers);
       setSelectedOption(null);
-      setTimeLeft(15); // Reset timer for next question
+      setTimeLeft(25); // Reset timer for next question
     } else {
       setUserAnswers(updatedUserAnswers);
       setShowScore(true);
