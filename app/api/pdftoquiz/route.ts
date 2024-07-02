@@ -1,3 +1,4 @@
+export const maxDuration = 30;
 import {
   VertexAI,
   Part,
@@ -7,6 +8,7 @@ import {
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+
 
 export async function POST(req: any) {
   try {
