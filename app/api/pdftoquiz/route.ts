@@ -1,4 +1,4 @@
-export const maxDuration = 20;
+export const maxDuration = 30;
 import {
   VertexAI,
   Part,
