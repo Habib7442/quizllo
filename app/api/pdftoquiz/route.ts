@@ -1,5 +1,10 @@
+import {
+  VertexAI,
+  Part,
+  GenerateContentRequest,
+  GenerateContentResult,
+} from "@google-cloud/vertexai";
 import { NextResponse } from "next/server";
-const { VertexAI } = require("@google-cloud/vertexai");
 
 export async function POST(req: any) {
   try {
@@ -17,28 +22,39 @@ export async function POST(req: any) {
       model: "gemini-1.5-flash-001",
     });
 
-    const filePart = {
-      file_data: {
-        file_uri: gcsUri,
-        mime_type: "application/pdf",
+    const filePart: Part = {
+      fileData: {
+        fileUri: gcsUri,
+        mimeType: "application/pdf",
       },
     };
 
-    const textPart = {
+    const textPart: Part = {
       text: prompt,
     };
 
-    const request = {
+    const request: GenerateContentRequest = {
       contents: [{ role: "user", parts: [filePart, textPart] }],
     };
 
-    const result = await generativeModel.generateContent(request);
-    const response = await result.response;
-    const botMessage = response.candidates[0].content.parts[0].text;
+    const result: GenerateContentResult = await generativeModel.generateContent(
+      request
+    );
 
-    console.log(botMessage);
+    if (
+      !result ||
+      !result.response.candidates ||
+      result.response.candidates.length === 0
+    ) {
+      throw new Error("No candidates found in the response");
+    }
 
-    // Process the botMessage to create the desired JSON format
+    const botMessage = result.response.candidates[0].content.parts[0].text;
+
+    if (!botMessage) {
+      throw new Error("Bot message is undefined");
+    }
+
     const questions = processQuizData(botMessage);
 
     console.log(questions);
@@ -50,9 +66,12 @@ export async function POST(req: any) {
   }
 }
 
-function processQuizData(
-  data: string
-): Array<{ question: string; options: string[]; answer: string; explanation: string }> {
+function processQuizData(data: string): Array<{
+  question: string;
+  options: string[];
+  answer: string;
+  explanation: string;
+}> {
   const questions: Array<{
     question: string;
     options: string[];
@@ -60,17 +79,20 @@ function processQuizData(
     explanation: string;
   }> = [];
 
-  const questionBlocks = data.split('\n\n');
+  const questionBlocks = data.split("\n\n");
 
   for (const block of questionBlocks) {
-    const lines = block.split('\n');
-    if (lines.length >= 7) {  // Q + 4 options + A + E
-      const question = lines[0].replace('Q: ', '').trim();
-      const options = lines.slice(1, 5).map(line => line.replace(/^[a-d]\)\s*/, '').trim());
-      const answerLetter = lines[5].replace('A: ', '').trim();
-      const answerIndex = answerLetter.charCodeAt(0) - 'a'.charCodeAt(0);
+    const lines = block.split("\n");
+    if (lines.length >= 7) {
+      // Q + 4 options + A + E
+      const question = lines[0].replace("Q: ", "").trim();
+      const options = lines
+        .slice(1, 5)
+        .map((line) => line.replace(/^[a-d]\)\s*/, "").trim());
+      const answerLetter = lines[5].replace("A: ", "").trim();
+      const answerIndex = answerLetter.charCodeAt(0) - "a".charCodeAt(0);
       const answer = options[answerIndex];
-      const explanation = lines[6].replace('E: ', '').trim();
+      const explanation = lines[6].replace("E: ", "").trim();
 
       questions.push({ question, options, answer, explanation });
     }

@@ -1,5 +1,5 @@
+import { VertexAI } from "@google-cloud/vertexai";
 import { NextResponse } from "next/server";
-const { VertexAI } = require("@google-cloud/vertexai");
 
 export async function POST(req: any) {
   try {
@@ -27,11 +27,19 @@ export async function POST(req: any) {
 
     const result = await generativeModel.generateContent(request);
     const response = await result.response;
+
+    if (!response.candidates || response.candidates.length === 0) {
+      throw new Error("No candidates found in the response");
+    }
+
     const botMessage = response.candidates[0].content.parts[0].text;
 
     console.log(botMessage);
 
-    // Process the botMessage to create the desired JSON format
+    if (!botMessage) {
+      throw new Error("Bot message is undefined");
+    }
+
     const questions = processQuizData(botMessage);
 
     console.log(questions);
@@ -43,9 +51,7 @@ export async function POST(req: any) {
   }
 }
 
-function processQuizData(
-  data: string
-): Array<{
+function processQuizData(data: string): Array<{
   question: string;
   options: string[];
   answer: string;

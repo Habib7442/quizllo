@@ -23,28 +23,29 @@ const Quiz = ({ questions, loading }: QuizProps) => {
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   const router = useRouter();
 
   useEffect(() => {
-    if (timeLeft === 0) {
-      if (questions && questions.length > 0) {
-        handleNextQuestion();
-      } else {
-        setTimeLeft(15); // Reset timer if no questions are available
-      }
+    if (isTimerRunning) {
+      const timer = setTimeout(() => {
+        if (timeLeft > 0) {
+          setTimeLeft(timeLeft - 1);
+        } else {
+          handleNextQuestion();
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-
-    const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [timeLeft, questions]);
+  }, [timeLeft, isTimerRunning]);
 
   useEffect(() => {
-    setTimeLeft(15); // Reset timer for new question
-  }, [currentQuestion]);
+    if (questions.length > 0 && !isTimerRunning) {
+      setIsTimerRunning(true);
+      setTimeLeft(15);
+    }
+  }, [questions, currentQuestion]);
 
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
@@ -81,7 +82,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
     }
   };
 
-  if (questions && questions?.length === 0) {
+  if (questions && questions.length === 0) {
     return (
       <div className="w-full h-[70vh] flex justify-center items-center">
         {loading ? (
@@ -102,7 +103,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
           <div className="text-center flex flex-col justify-center items-center">
             <h2 className="text-2xl font-bold mb-4">Quiz Complete!</h2>
             <p className="text-lg">
-              You scored {score} out of {questions?.length}
+              You scored {score} out of {questions.length}
             </p>
             <Button variant="outline" asChild className="w-full mt-5">
               <Link href="/analytics">Go to analytics</Link>
@@ -112,7 +113,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
           <div>
             <div className="mb-6">
               <div className="text-lg font-medium mb-2">
-                Question {currentQuestion + 1} of {questions?.length}
+                Question {currentQuestion + 1} of {questions.length}
               </div>
               <div
                 className="text-xl font-semibold"
