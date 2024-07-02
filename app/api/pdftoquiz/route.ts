@@ -9,7 +9,7 @@ export async function POST(req: any) {
     console.log(prompt);
 
     const vertexAI = new VertexAI({
-      project: process.env.NEXT_PUBLIC_PROJECT_ID,
+      project: process.env.VERTEX_AI_PROJECT_ID,
       location: "us-central1",
     });
 

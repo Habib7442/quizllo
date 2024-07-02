@@ -1,35 +1,19 @@
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
 
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp,
-  getDocs,
-  query,
-  where,
-  setDoc,
-  doc,
-  updateDoc,
-  FieldValue,
-  arrayUnion,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2u4oRWeiD7DQzDp9PhjmlQtAIXZVfP4c",
-  authDomain: "silken-dogfish-425903-h6.firebaseapp.com",
-  databaseURL: "https://silken-dogfish-425903-h6-default-rtdb.firebaseio.com",
-  projectId: "silken-dogfish-425903-h6",
-  storageBucket: "silken-dogfish-425903-h6.appspot.com",
-  messagingSenderId: "769462926678",
-  appId: "1:769462926678:web:4f555635771453e40baaf7",
-  measurementId: "G-35V8W3NSZR",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN!,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL!,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 };
 
 const app = initializeApp(firebaseConfig);
