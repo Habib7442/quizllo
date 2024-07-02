@@ -45,9 +45,20 @@ export async function POST(req: any) {
     console.log(questions);
 
     return NextResponse.json({ response: questions });
-  } catch (error) {
-    console.log(error);
-    return new NextResponse("Internal Error", { status: 500 });
+  } catch (error: unknown) {
+    console.error("Detailed error:", error);
+
+    let errorMessage = "An unknown error occurred";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === "string") {
+      errorMessage = error;
+    }
+
+    return new NextResponse(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
