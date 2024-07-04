@@ -1,4 +1,5 @@
 "use client";
+import Footer from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { HeroHighlight } from "@/components/ui/hero-highlight";
 import { auth } from "@/utils/firebase";
@@ -29,6 +30,7 @@ const DashboardLayout = ({ children }: any) => {
       <HeroHighlight>
         <Navbar />
         {children}
+        <Footer />
       </HeroHighlight>
     </div>
   );

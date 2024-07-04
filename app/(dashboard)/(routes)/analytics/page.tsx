@@ -84,39 +84,68 @@ const AnalyticsContent = () => {
 
   const generatePDF = async () => {
     const input = contentRef.current;
-
+  
     if (input) {
-      const canvas = await html2canvas(input, {
-        backgroundColor: "#000000",
-        scale: 2,
-      });
-
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      // Calculate the number of pages needed
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const totalPages = Math.ceil(pdfHeight / pageHeight);
-
-      // Add each page to the PDF
-      for (let i = 0; i < totalPages; i++) {
-        const pageCanvas = await html2canvas(input, {
-          backgroundColor: "#000000", // Ensure each page has a black background
-          scale: 2,
-          y: -i * pageHeight * 2,
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10; // margin in mm
+  
+      // Function to add text with word wrap
+      const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        lines.forEach((line: string, index: number) => {
+          pdf.text(line, x, y + index * lineHeight);
         });
-
-        const pageImgData = pageCanvas.toDataURL("image/png");
-
-        if (i > 0) {
+        return lines.length * lineHeight;
+      };
+  
+      // Function to add a black background to the current page
+      const addBlackBackground = () => {
+        pdf.setFillColor(0, 0, 0);
+        pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+      };
+  
+      // Add black background to the first page
+      addBlackBackground();
+  
+      // Set text color to white
+      pdf.setTextColor(255, 255, 255);
+  
+      // Add title
+      pdf.setFontSize(20);
+      pdf.text("Quiz Analytics", pdfWidth / 2, margin, { align: "center" });
+  
+      // Add score
+      pdf.setFontSize(14);
+      pdf.text(`Your score: ${score} out of ${totalQuestions}`, pdfWidth / 2, margin + 10, { align: "center" });
+  
+      let yPosition = margin + 20;
+  
+      // Add questions
+      pdf.setFontSize(12);
+      questions.forEach((q: any, index: number) => {
+        if (yPosition > pdfHeight - margin) {
           pdf.addPage();
+          addBlackBackground(); // Add black background to the new page
+          yPosition = margin;
         }
-
-        pdf.addImage(pageImgData, "PNG", 0, 0, pdfWidth, pageHeight);
-      }
-
+  
+        pdf.setFont("helvetica", "bold");
+        yPosition += addWrappedText(`Q${index + 1}: ${q.question}`, margin, yPosition, pdfWidth - 2 * margin, 5);
+        
+        pdf.setFont("helvetica", "normal");
+        yPosition += 5;
+        yPosition += addWrappedText(`Your answer: ${userAnswers[index]}`, margin, yPosition, pdfWidth - 2 * margin, 5);
+        yPosition += addWrappedText(`Correct answer: ${q.answer}`, margin, yPosition, pdfWidth - 2 * margin, 5);
+        
+        if (q.explanation) {
+          yPosition += addWrappedText(`Explanation: ${q.explanation}`, margin, yPosition, pdfWidth - 2 * margin, 5);
+        }
+  
+        yPosition += 10; // Add some space between questions
+      });
+  
       pdf.save("analytics.pdf");
     } else {
       console.error("Element not found");
