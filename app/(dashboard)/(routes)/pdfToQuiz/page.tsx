@@ -97,6 +97,7 @@ const PdfToQuiz = () => {
         3. Provide the correct answer after the options, starting with "A: " followed by the correct option letter.
         4. Provide a brief explanation for the correct answer, starting with "E: " followed by the explanation text.
         5. Separate each question with a blank line.
+        6. Do not repeat same question, each question should be different.
 
         Example format:
 
@@ -221,7 +222,7 @@ const PdfToQuiz = () => {
               "Generate"
             )}
           </Button>
-          <Quiz questions={response} loading={quizLoading} />
+          <Quiz questions={response} loading={quizLoading} collectionName="" />
         </div>
       </div>
     </>

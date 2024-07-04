@@ -2,8 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Loader } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { getAuth } from "firebase/auth";
+import { getFirestore, collection, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 type Question = {
   question: string;
@@ -14,18 +15,22 @@ type Question = {
 type QuizProps = {
   questions: Question[];
   loading: boolean;
+  collectionName: string;
 };
 
-const Quiz = ({ questions, loading }: QuizProps) => {
+const Quiz = ({ questions, loading, collectionName }: QuizProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [showScore, setShowScore] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(25);
+  const [timeLeft, setTimeLeft] = useState(20);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [canTakeQuiz, setCanTakeQuiz] = useState(false);
 
   const router = useRouter();
+  const auth = getAuth();
+  const db = getFirestore();
 
   useEffect(() => {
     if (isTimerRunning) {
@@ -43,36 +48,94 @@ const Quiz = ({ questions, loading }: QuizProps) => {
   useEffect(() => {
     if (questions.length > 0 && !isTimerRunning) {
       setIsTimerRunning(true);
-      setTimeLeft(25);
+      setTimeLeft(20);
     }
   }, [questions, currentQuestion]);
+
+  useEffect(() => {
+    if (collectionName) {
+      checkQuizEligibility();
+    }
+  }, [collectionName]);
+
+  const checkQuizEligibility = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const leaderboardRef = collection(db, "leaderboard", collectionName, "scores");
+      const userDocRef = doc(leaderboardRef, user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const lastQuizTimestamp = userDoc.data()?.timestamp?.toDate();
+        if (lastQuizTimestamp) {
+          const currentTime = new Date();
+          const timeDifference = currentTime.getTime() - lastQuizTimestamp.getTime();
+          const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+          if (hoursDifference < 48) {
+            setCanTakeQuiz(false);
+            return;
+          }
+        }
+      }
+    }
+    setCanTakeQuiz(true);
+  };
 
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
   };
 
-  const handleNextQuestion = () => {
+  const calculateFinalScore = (
+    userAnswers: string[],
+    questions: Question[]
+  ) => {
+    return userAnswers.reduce((score, answer, index) => {
+      return answer === questions[index].answer ? score + 1 : score;
+    }, 0);
+  };
+
+  const handleNextQuestion = async () => {
     const answer = selectedOption || "";
     const updatedUserAnswers = [...userAnswers, answer];
-
-    if (selectedOption === questions[currentQuestion]?.answer) {
-      setScore(score + 1);
-    }
 
     const nextQuestion = currentQuestion + 1;
     if (nextQuestion < questions.length) {
       setCurrentQuestion(nextQuestion);
       setUserAnswers(updatedUserAnswers);
       setSelectedOption(null);
-      setTimeLeft(25); // Reset timer for next question
+      setTimeLeft(20); // Reset timer for next question
     } else {
       setUserAnswers(updatedUserAnswers);
       setShowScore(true);
+
+      const finalScore = calculateFinalScore(updatedUserAnswers, questions);
+      setScore(finalScore);
+
+      // Save user score in Firestore if collectionName is provided
+      const user = auth.currentUser;
+      if (collectionName && user) {
+        const userScoreData = {
+          name: user.displayName,
+          score: finalScore,
+          totalQuestions: questions.length,
+          timestamp: serverTimestamp(),
+        };
+        const leaderboardRef = collection(
+          db,
+          "leaderboard",
+          collectionName,
+          "scores"
+        );
+        const userDocRef = doc(leaderboardRef, user.uid);
+        await setDoc(userDocRef, userScoreData);
+      }
+
       // Pass the data to the analytics page
       const data = {
-        score,
+        score: finalScore,
         totalQuestions: questions.length,
-        userAnswers: updatedUserAnswers, // Use updatedUserAnswers here
+        userAnswers: updatedUserAnswers,
         questions,
       };
       const query = new URLSearchParams({
@@ -81,6 +144,16 @@ const Quiz = ({ questions, loading }: QuizProps) => {
       router.push(`/analytics?${query}`);
     }
   };
+
+  if (!canTakeQuiz && collectionName) {
+    return (
+      <div className="w-full h-[70vh] flex justify-center items-center">
+        <h1 className="text-center text-2xl font-bold text-purple">
+          You have already taken this quiz. Please wait 48 hours to retake.
+        </h1>
+      </div>
+    );
+  }
 
   if (questions && questions.length === 0) {
     return (
@@ -105,9 +178,7 @@ const Quiz = ({ questions, loading }: QuizProps) => {
             <p className="text-lg">
               You scored {score} out of {questions.length}
             </p>
-            <Button variant="outline" asChild className="w-full mt-5">
-              <Link href="/analytics">Go to analytics</Link>
-            </Button>
+            <p className="text-lg">Please wait redirecting...</p>
           </div>
         ) : (
           <div>
@@ -124,19 +195,24 @@ const Quiz = ({ questions, loading }: QuizProps) => {
             </div>
             <div className="grid gap-4 mb-6">
               {questions[currentQuestion]?.options.map(
-                (option: any, index: any) => (
+                (option: string, index: number) => (
                   <Button
                     variant="outline"
                     key={index}
-                    className={`px-4 py-2 rounded-md border ${
-                      selectedOption === option
-                        ? "bg-teal-500 text-white"
-                        : "bg-transparent text-purple-300"
-                    } hover:bg-gray-800`}
+                    className={`px-4 py-12 lg:py-4 rounded-md border text-center
+              ${
+                selectedOption === option
+                  ? "bg-teal-500 text-white"
+                  : "bg-transparent text-purple-300"
+              }
+              hover:bg-gray-800 transition-colors duration-300 ease-in-out`}
                     onClick={() => handleOptionClick(option)}
                     style={{
                       whiteSpace: "normal",
                       wordBreak: "break-word",
+                      overflowWrap: "break-word",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}
                   >
                     {option}

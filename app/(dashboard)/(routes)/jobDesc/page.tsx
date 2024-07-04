@@ -8,7 +8,7 @@ import { Loader2Icon } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
-const AnyQuiz = () => {
+const JobDescription = () => {
   const [loading, setLoading] = useState(false);
   const [quizLoading, setQuizLoading] = useState(false);
   const [difficulty, setDifficulty] = useState<string>("easy");
@@ -24,34 +24,35 @@ const AnyQuiz = () => {
       }
       setQuizLoading(true);
       const response = await axios.post("/api/quiz", {
-        prompt: `You are an expert quiz generator. Generate ${numQuestions} number of questions with difficulty level ${difficulty} on the topic ${topic}. Follow these strict guidelines:
+        prompt: `You are an expert recruiter. Generate ${numQuestions} number of questions with difficulty level ${difficulty} based on the given job description ${topic}. Follow these strict guidelines:
 
-        1. Start each question with "Q: " followed by the question text.
-        2. List 4 options for each question, starting each option with a), b), c), or d).
-        3. Provide the correct answer after the options, starting with "A: " followed by the correct option letter.
-        4. Provide a brief explanation for the correct answer, starting with "E: " followed by the explanation text.
-        5. Separate each question with a blank line.
-        6. Do not repeat same question, each question should be different.
+1. Start each question with "Q: " followed by the question text.
+2. List 4 options for each question, starting each option with a), b), c), or d).
+3. Provide the correct answer after the options, starting with "A: " followed by the correct option letter.
+4. Provide a brief explanation for the correct answer, starting with "E: " followed by the explanation text.
+5. Separate each question with a blank line.
+6. Do not repeat any questions; each question should be unique.
 
-        Example format:
+Example format:
 
-        Q: What is the capital of France?
-        a) London
-        b) Berlin
-        c) Paris
-        d) Madrid
-        A: c
-        E: Paris is the capital and largest city of France, as well as its cultural and economic center.
+Q: What is the capital of France?
+a) London
+b) Berlin
+c) Paris
+d) Madrid
+A: c
+E: Paris is the capital and largest city of France, as well as its cultural and economic center.
 
-        Q: Who wrote "Romeo and Juliet"?
-        a) Charles Dickens
-        b) William Shakespeare
-        c) Jane Austen
-        d) Mark Twain
-        A: b
-        E: William Shakespeare, an English playwright and poet of the late 16th and early 17th centuries, is widely regarded as the author of "Romeo and Juliet" and many other famous plays.
+Q: Who wrote "Romeo and Juliet"?
+a) Charles Dickens
+b) William Shakespeare
+c) Jane Austen
+d) Mark Twain
+A: b
+E: William Shakespeare, an English playwright and poet of the late 16th and early 17th centuries, is widely regarded as the author of "Romeo and Juliet" and many other famous plays.
 
-        Generate the quiz now.`,
+Generate the quiz now.
+`,
       });
 
       // console.log(response.data, "ress");
@@ -66,7 +67,7 @@ const AnyQuiz = () => {
   return (
     <div className="w-full h-full flex flex-col justify-center items-center p-4">
       <h1 className="text-center mt-2 font-bold text-blue-200 text-3xl">
-        Take Quiz on any topic
+        Take Quiz based on job description
       </h1>
       <div className="w-full lg:w-[60vw]">
         <div className="flex flex-row justify-evenly items-center mt-4 gap-4">
@@ -87,7 +88,7 @@ const AnyQuiz = () => {
             className="w-full hidden lg:block lg:w-auto"
           >
             {quizLoading ? (
-              <Loader2Icon className="animate-spin" />
+              <Loader2Icon className="animate-spin mx-auto" />
             ) : (
               "Generate"
             )}
@@ -100,20 +101,16 @@ const AnyQuiz = () => {
           required
         />
         <Button
-            onClick={generateQuiz}
-            variant="outline"
-            className="w-full lg:w-auto lg:hidden block mt-2"
-          >
-            {quizLoading ? (
-              <Loader2Icon className="animate-spin" />
-            ) : (
-              "Generate"
-            )}
-          </Button>
+          onClick={generateQuiz}
+          variant="outline"
+          className="w-full lg:w-auto lg:hidden block mt-2"
+        >
+          {quizLoading ? <Loader2Icon className="animate-spin" /> : "Generate"}
+        </Button>
         <Quiz questions={response} loading={quizLoading} collectionName="" />
       </div>
     </div>
   );
 };
 
-export default AnyQuiz;
+export default JobDescription;
