@@ -4,7 +4,14 @@ import { Button } from "./ui/button";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getAuth } from "firebase/auth";
-import { getFirestore, collection, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
 type Question = {
   question: string;
@@ -61,7 +68,12 @@ const Quiz = ({ questions, loading, collectionName }: QuizProps) => {
   const checkQuizEligibility = async () => {
     const user = auth.currentUser;
     if (user) {
-      const leaderboardRef = collection(db, "leaderboard", collectionName, "scores");
+      const leaderboardRef = collection(
+        db,
+        "leaderboard",
+        collectionName,
+        "scores"
+      );
       const userDocRef = doc(leaderboardRef, user.uid);
       const userDoc = await getDoc(userDocRef);
 
@@ -69,7 +81,8 @@ const Quiz = ({ questions, loading, collectionName }: QuizProps) => {
         const lastQuizTimestamp = userDoc.data()?.timestamp?.toDate();
         if (lastQuizTimestamp) {
           const currentTime = new Date();
-          const timeDifference = currentTime.getTime() - lastQuizTimestamp.getTime();
+          const timeDifference =
+            currentTime.getTime() - lastQuizTimestamp.getTime();
           const hoursDifference = timeDifference / (1000 * 60 * 60);
 
           if (hoursDifference < 48) {
@@ -91,7 +104,7 @@ const Quiz = ({ questions, loading, collectionName }: QuizProps) => {
     questions: Question[]
   ) => {
     return userAnswers.reduce((score, answer, index) => {
-      return answer === questions[index].answer ? score + 1 : score;
+      return answer === questions[index]?.answer ? score + 1 : score;
     }, 0);
   };
 
@@ -117,8 +130,9 @@ const Quiz = ({ questions, loading, collectionName }: QuizProps) => {
       if (collectionName && user) {
         const userScoreData = {
           name: user.displayName,
+          img: user.photoURL || "",
           score: finalScore,
-          totalQuestions: questions.length,
+          totalQuestions: questions?.length,
           timestamp: serverTimestamp(),
         };
         const leaderboardRef = collection(

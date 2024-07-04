@@ -9,7 +9,6 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 
 const AnyQuiz = () => {
-  const [loading, setLoading] = useState(false);
   const [quizLoading, setQuizLoading] = useState(false);
   const [difficulty, setDifficulty] = useState<string>("easy");
   const [numQuestions, setNumQuestions] = useState<number>(5);
@@ -105,7 +104,7 @@ const AnyQuiz = () => {
             className="w-full lg:w-auto lg:hidden block mt-2"
           >
             {quizLoading ? (
-              <Loader2Icon className="animate-spin" />
+              <Loader2Icon className="animate-spin text-center" />
             ) : (
               "Generate"
             )}

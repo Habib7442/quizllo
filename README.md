@@ -6,9 +6,8 @@ Welcome to Quizllo, a cutting-edge platform that leverages AI to bring you an un
 
 ### 1. Create Quiz from PDF
 **Description:** Upload your PDF and let AI create a quiz for you.
-**Image:** ![Create Quiz from PDF](./public/dashboard-1.png)
-**Link:** [Create Quiz from PDF](./pdfToQuiz)
-
+**Image:** ![Create Quiz from PDF](./public/dashboard-1.jpg)
+**Link:** [Create Quiz f
 ### 2. Take Quiz on Any Topic
 **Description:** Type any topic and AI will generate a quiz for you.
 **Image:** ![Take Quiz on Any Topic](./public/dashboard-2.jpg)

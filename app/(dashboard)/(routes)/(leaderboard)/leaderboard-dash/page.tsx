@@ -13,7 +13,7 @@ const LeaderboardDash = () => {
           <PinContainer title={item.link} href={item.link}>
             <div className="relative flex items-center justify-center lg:w-80 w-[80vw] overflow-hidden h-[20vh] lg:h-[30vh] mb-10">
               <div
-                className="relative w-full h-full overflow-hidden lg:rounded-3xl"
+                className="relative w-full h-full overflow-hidden rounded-lg lg:rounded-3xl"
                 style={{ backgroundColor: "#13162D" }}
               >
                 <Image width={100} height={100} src="/bg.png" alt="bgimg" />
@@ -23,7 +23,7 @@ const LeaderboardDash = () => {
                 height={200}
                 src={item.img}
                 alt="cover"
-                className="z-10 absolute bottom-0 w-full h-full object-cover"
+                className="z-10 absolute bottom-0 w-full h-full object-cover rounded-lg lg:rounded-3xl"
               />
             </div>
 
@@ -32,7 +32,7 @@ const LeaderboardDash = () => {
             </h1>
 
             <p
-              className="lg:text-lg lg:font-normal font-light text-sm line-clamp-2"
+              className="lg:text-sm lg:font-normal font-light text-sm line-clamp-2"
               style={{
                 color: "#BEC1DD",
                 margin: "1vh 0",
